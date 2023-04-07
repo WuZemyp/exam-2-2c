@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-
+#include <arpa/inet.h>
 void error(const char *msg)
 {
     perror(msg);
@@ -30,16 +30,22 @@ int main(int argc, char *argv[])
      Read the server port number
     */
     // TODO
-
+    portno=atoi(argv[2]);
     /*
      Create a socket
     */ 
     // TODO
+    sockfd=socket(AF_INET, SOCK_STREAM, 0);
 
     /*
     Read the server hostname
     */   
     // TODO
+    server = gethostbyname(argv[1]);
+    if(server==NULL)
+    {
+        error("sever");
+    }
 
     /*
     The function bzero() sets all values in a buffer to zero.
@@ -51,12 +57,20 @@ int main(int argc, char *argv[])
     Configure the server_address struct accordingly.
     */
     // TODO
+    
+    server_address.sin_family = AF_INET;
+    //server_address.sin_addr.s_addr=inet_addr(argv[1]);
+    //server_address.sin_addr.s_addr=inet_addr(server->h_addr_list[0]);
+    bcopy((char *)server->h_addr_list[0], (char *)&server_address.sin_addr.s_addr, server->h_length);
+    server_address.sin_port = htons(portno);
 
     /*
     Establish a connection to the server using the socket and the server_address configured above.
     */
     // TODO
-    
+    if(connect(sockfd, (struct sockaddr *)&server_address, sizeof(server_address))<0){
+        error("connect");
+    }
     /*
     Prompt the user to enter a message, use fgets to read the message from stdin.
     */
@@ -68,12 +82,24 @@ int main(int argc, char *argv[])
     Write the message above to the socket.
     */
     // TODO
-
+    n = write(sockfd, buffer, strlen(buffer));\
+    if(n<0)
+    {
+        error("write error");
+    }
+    // read the response from the server
+   
     /*
     Read the reply from the socket.
     */
     // TODO
-
+    bzero(buffer, 256);
+    n = read(sockfd, buffer, 255);
+    if(n<0)
+    {
+        error("read error");
+    }
+    // re
     /*
      Print the server response and close the socket
     */
